@@ -101,8 +101,28 @@ void main() {
     // modelPosition.xyz *= (1.0 + multiple);
 
     // Bumpy, working
-    float multiple = abs(smoothstep(0.0, 0.03, mod(uv.x, 0.05))) * abs((smoothstep(0.0, 0.03, mod(uv.y, 0.05)))) * 0.1;
-    modelPosition.xyz *= (1.0 + multiple);
+    // float multiple = abs(smoothstep(0.0, 0.03, mod(uv.x, 0.05))) * abs((smoothstep(0.0, 0.03, mod(uv.y, 0.05)))) * 0.1;
+    // modelPosition.xyz *= (1.0 + multiple);
+
+    // Like a butt
+    // float multiple = abs(sin(uv.x * PI * 2.0));
+    // modelPosition.xyz *= (1.0 + multiple);
+
+    // if (modelPosition.x > 0.5 && modelPosition.y > 0.5 && modelPosition.z > 0.5) {
+    //     modelPosition.xyz *= 2.0;
+    // }
+
+    // float multiple = abs(smoothstep(0.0, 0.05, mod(sin(uv.x * PI * 0.05 * 10.0), 0.05))) * abs((smoothstep(0.0, 0.05, mod(sin(uv.y * PI * 0.05 * 10.0), 0.05)))) * 0.1;
+    // modelPosition.xyz *= (1.0 + multiple);
+
+    // float intensity = 0.1;
+    // float timity = 0.1;
+    // float multiple = intensity * sin(uv.x * timity) * intensity * sin(uv.y * timity);
+    // modelPosition.xyz *= (1.0 + multiple);
+
+    // For god's sake what is this
+    float perlin = perlin4d(vec4(modelPosition.xyz, uTime));
+    modelPosition.xyz *= (clamp(perlin, 0.5, perlin) + 1.0);
 
     vec4 viewPosition = viewMatrix * modelPosition;
     vec4 projectedPosition = projectionMatrix * viewPosition;
