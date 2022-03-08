@@ -1,9 +1,9 @@
 import "./style.css";
 import * as THREE from "three";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls.js";
+import { VertexNormalsHelper } from "three/examples/jsm/helpers/VertexNormalsHelper";
 import sphereVertexShader from "./shaders/sphereVertex.glsl";
 import sphereFragmentShader from "./shaders/sphereFragment.glsl";
-
 /**
  * Base
  */
@@ -45,26 +45,32 @@ const camera = new THREE.PerspectiveCamera(
   0.1,
   100
 );
-camera.position.x = 1;
-camera.position.y = 1;
-camera.position.z = 1;
-scene.add(camera);
+camera.position.z = 3;
+scene.add(camera, new THREE.AxesHelper(5));
 
 // Controls
 const controls = new OrbitControls(camera, canvas);
 controls.enableDamping = true;
 
 /**
- * Cube
+ * Sphere
  */
-const cube = new THREE.Mesh(
+const sphere = new THREE.Mesh(
   new THREE.SphereBufferGeometry(1, 64, 64),
   new THREE.ShaderMaterial({
     vertexShader: sphereVertexShader,
     fragmentShader: sphereFragmentShader,
+    wireframe: true,
+    uniforms: {
+      uTime: { value: null },
+    },
   })
 );
-scene.add(cube);
+const helper = new VertexNormalsHelper(sphere, 0.05, "#00ff00");
+scene.add(helper);
+sphere.material.uniforms.uTime.value = 0;
+console.log(sphere);
+scene.add(sphere);
 
 /**
  * Renderer
@@ -86,6 +92,9 @@ const tick = () => {
   const elapsedTime = clock.getElapsedTime();
   const deltaTime = elapsedTime - lastElapsedTime;
   lastElapsedTime = elapsedTime;
+
+  // Update uTime
+  sphere.material.uniforms.uTime.value = elapsedTime;
 
   // Update controls
   controls.update();
