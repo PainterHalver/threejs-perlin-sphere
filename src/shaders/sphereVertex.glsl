@@ -1,4 +1,5 @@
 uniform float uTime;
+uniform float uBumpValue;
 
 varying vec3 vColor;
 
@@ -74,6 +75,34 @@ void main() {
     // modelPosition.xyz *= multiple;
 
     // modelPosition.xyz *= normal;
+
+    // float multiple = (sin(distance(modelPosition.xyz, vec3(1.0,0.0,0.0))) * 0.5) + 1.0; // 0.5 to 1.5
+    // modelPosition.xyz *= multiple;
+
+    // if (modelPosition.xyz == vec3(1.0,1.0,1.0)) {
+    //     modelPosition.xyz *= 2.0;
+    // }
+
+    // modelPosition.xyz *= dot(normalize(normal), normalize(modelPosition.xyz));
+
+    // float multiple = sin(abs(modelPosition.x) + abs(modelPosition.y) + abs(modelPosition.z)) / 3.0 + 1.0;
+    // modelPosition.xyz *= multiple;
+
+    // modelPosition.xyz *= (sin(rand(modelPosition.xy)) * 0.5) + 1.0;
+
+    // float multiple = mod(distance(uv, vec2(0, 0)), 0.1) * 10.0;
+    // modelPosition.xyz *= (1.0 + multiple);
+
+    //cool
+    // float multiple = abs(mod(uv.x, 0.1)) + abs(mod(uv.y, 0.1));
+    // modelPosition.xyz *= (1.0 + multiple);
+
+    // float multiple = abs(mod(uv.x, 0.05)) * abs(mod(uv.y, 0.05)) * 100.0;
+    // modelPosition.xyz *= (1.0 + multiple);
+
+    // Bumpy, working
+    float multiple = abs(smoothstep(0.0, 0.03, mod(uv.x, 0.05))) * abs((smoothstep(0.0, 0.03, mod(uv.y, 0.05)))) * 0.1;
+    modelPosition.xyz *= (1.0 + multiple);
 
     vec4 viewPosition = viewMatrix * modelPosition;
     vec4 projectedPosition = projectionMatrix * viewPosition;

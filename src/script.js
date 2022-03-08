@@ -56,18 +56,16 @@ controls.enableDamping = true;
  * Sphere
  */
 const sphere = new THREE.Mesh(
-  new THREE.SphereBufferGeometry(1, 64, 64),
+  new THREE.SphereBufferGeometry(1, 128, 128),
   new THREE.ShaderMaterial({
     vertexShader: sphereVertexShader,
     fragmentShader: sphereFragmentShader,
-    wireframe: true,
+    // wireframe: true,
     uniforms: {
       uTime: { value: null },
     },
   })
 );
-const helper = new VertexNormalsHelper(sphere, 0.05, "#00ff00");
-scene.add(helper);
 sphere.material.uniforms.uTime.value = 0;
 console.log(sphere);
 scene.add(sphere);
