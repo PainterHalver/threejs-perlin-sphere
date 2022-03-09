@@ -62,11 +62,16 @@ const sphere = new THREE.Mesh(
     fragmentShader: sphereFragmentShader,
     // wireframe: true,
     uniforms: {
-      uTime: { value: null },
+      u_time: { value: null },
+
+      u_distortionFrequency: { value: 1.5 },
+      u_distortionScale: { value: 0.65 },
+      u_displacementFrequency: { value: 2.12 },
+      u_displacementScale: { value: 0.152 },
     },
   })
 );
-sphere.material.uniforms.uTime.value = 0;
+sphere.material.uniforms.u_time.value = 0;
 console.log(sphere);
 scene.add(sphere);
 
@@ -91,8 +96,8 @@ const tick = () => {
   const deltaTime = elapsedTime - lastElapsedTime;
   lastElapsedTime = elapsedTime;
 
-  // Update uTime
-  sphere.material.uniforms.uTime.value = elapsedTime;
+  // Update u_time
+  sphere.material.uniforms.u_time.value = elapsedTime;
 
   // Update controls
   controls.update();
