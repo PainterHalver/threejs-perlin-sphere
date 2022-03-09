@@ -25,7 +25,8 @@ vec3 doPerlin(vec3 _position) {
     float perlinScale = perlin4d(vec4(distortedPosition * u_displacementFrequency, u_time));
     
     vec3 displacedPosition = _position;
-    displacedPosition += normalize(_position) * perlinScale * u_displacementScale; // 
+    displacedPosition += normalize(_position) * perlinScale * u_displacementScale;
+    // displacedPosition += clamp(normalize(_position) * perlinScale * u_displacementScale * 10.0, -0.1, 999999.0);
 
     return displacedPosition;
 }
@@ -139,6 +140,7 @@ void main() {
 
     // Perlin last try :)
     vec3 currentPosition = doPerlin(position);
+    
     vec4 viewPosition = viewMatrix * vec4(currentPosition, 1.0);
     gl_Position = projectionMatrix * viewPosition;
 
