@@ -3,6 +3,7 @@ uniform float u_distortionFrequency;
 uniform float u_distortionScale;
 uniform float u_displacementFrequency;
 uniform float u_displacementScale;
+uniform float u_segmentCount;
 
 varying vec3 vColor;
 
@@ -144,11 +145,32 @@ void main() {
     vec4 viewPosition = viewMatrix * vec4(currentPosition, 1.0);
     gl_Position = projectionMatrix * viewPosition;
 
+    // Need to recalculate normals for lighting because `normal` variable is still relating to world space
+    // https://discourse.threejs.org/t/calculating-vertex-normals-after-displacement-in-the-vertex-shader/16989/7
+    // https://observablehq.com/@k9/calculating-normals-for-distorted-vertices
+
+    // Formula: bitangent = cross(normal, tangent.xyz) * tangent.w; // tangent.w contains the sign, either 1 or -1
+    vec3 biTangent = cross(normal, tangent.xyz) * tangent.w;
+    // Direction vector needs to be normalized
+    biTangent = normalize(biTangent);
+
+    // Formula: length / num_of_segments
+    float texelSize = (PI * 2.0) / u_segmentCount; 
+
+    vec3 neighbour1 = position + tangent.xyz * texelSize; 
+    vec3 neighbour2 = position + biTangent.xyz * texelSize;
+    vec3 displacedNeighbour1 = doPerlin(neighbour1);
+    vec3 displacedNeighbour2 = doPerlin(neighbour2);
+
+    // https://i.ya-webdesign.com/images/vector-normals-tangent-16.png
+    vec3 displacedTangent = displacedNeighbour1 - currentPosition;
+    vec3 displacedBitangent = displacedNeighbour2 - currentPosition;
+
+    vec3 computedNormal = normalize(cross(displacedTangent, displacedBitangent));
 
     // Varyings
-    vColor = currentPosition;
+    // vColor = normal;
+    // vColor = tangent.xyz;
+    vColor = computedNormal;
 
-    /* Notes
-    - The normal is already normalized because sphere radius is 1. And that also means normal === modelPosition.xyz
-    */
 }

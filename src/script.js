@@ -2,6 +2,10 @@ import "./style.css";
 import * as THREE from "three";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls.js";
 import { VertexNormalsHelper } from "three/examples/jsm/helpers/VertexNormalsHelper";
+import { ShaderPass } from "three/examples/jsm/postprocessing/ShaderPass";
+import { RenderPass } from "three/examples/jsm/postprocessing/RenderPass";
+import { EffectComposer } from "three/examples/jsm/postprocessing/EffectComposer";
+
 import GUI from "lil-gui";
 
 import sphereVertexShader from "./shaders/sphereVertex.glsl";
@@ -70,13 +74,18 @@ const renderer = new THREE.WebGLRenderer({
 });
 renderer.setSize(sizes.width, sizes.height);
 renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+
+renderer.setClearColor(new THREE.Color("#21130d"));
 //////////////////////////////////////////////////////////////////////////////////////////////
 
 /**
  * Sphere
  */
+
+const sphereGeometry = new THREE.SphereBufferGeometry(1, 512, 512);
+sphereGeometry.computeTangents();
 const sphere = new THREE.Mesh(
-  new THREE.SphereBufferGeometry(1, 512, 512),
+  sphereGeometry,
   new THREE.ShaderMaterial({
     vertexShader: sphereVertexShader,
     fragmentShader: sphereFragmentShader,
@@ -88,37 +97,43 @@ const sphere = new THREE.Mesh(
       u_distortionScale: { value: 0.65 },
       u_displacementFrequency: { value: 2.12 },
       u_displacementScale: { value: 0.152 },
+
+      u_segmentCount: { value: null },
+    },
+    defines: {
+      USE_TANGENT: "",
     },
   })
 );
+sphere.material.uniforms.u_segmentCount.value =
+  sphere.geometry.parameters.widthSegments;
 sphere.material.uniforms.u_time.value = 0;
-console.log(sphere);
 scene.add(sphere);
 
 /**
  * Debug
  */
-const perlinFolderGui = gui.addFolder("Perlin noise");
-perlinFolderGui.open();
-perlinFolderGui
+const sphereGui = gui.addFolder("Sphere");
+sphereGui.open();
+sphereGui
   .add(sphere.material.uniforms.u_distortionFrequency, "value")
   .min(0)
   .max(10)
   .step(0.01)
   .name("u_distortionFrequency");
-perlinFolderGui
+sphereGui
   .add(sphere.material.uniforms.u_distortionScale, "value")
   .min(0)
   .max(10)
   .step(0.01)
   .name("u_distortionScale");
-perlinFolderGui
+sphereGui
   .add(sphere.material.uniforms.u_displacementFrequency, "value")
   .min(0)
   .max(10)
   .step(0.01)
   .name("u_displacementFrequency");
-perlinFolderGui
+sphereGui
   .add(sphere.material.uniforms.u_displacementScale, "value")
   .min(0)
   .max(2)
