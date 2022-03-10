@@ -4,6 +4,8 @@ uniform float u_distortionScale;
 uniform float u_displacementFrequency;
 uniform float u_displacementScale;
 uniform float u_segmentCount;
+uniform float u_fresnelScale;
+uniform float u_fresnelOffset;
 
 varying vec3 vColor;
 
@@ -33,9 +35,9 @@ vec3 doPerlin(vec3 _position) {
 }
 
 
-float rand(vec2 co) {
-    return fract(sin(dot(co, vec2(12.9898, 78.233))) * 43758.5453);
-}
+// float rand(vec2 co) {
+//     return fract(sin(dot(co, vec2(12.9898, 78.233))) * 43758.5453);
+// }
 
 void main() {
     
@@ -66,7 +68,7 @@ void main() {
 
     // modelPosition.xyz *= (sin(modelPosition.xyz * u_time) * 0.5) + 1.5;
 
-    float delta = (sin(u_time) + 1.0) * 0.5;
+    // float delta = (sin(u_time) + 1.0) * 0.5;
 
     // if (abs(mod(modelPosition.x, 0.05)) > 0.025 && abs(mod(modelPosition.y, 0.05)) > 0.025 && abs(mod(modelPosition.z, 0.05)) > 0.025) {
     //     modelPosition.xyz *= vec3(1.1);
@@ -145,7 +147,10 @@ void main() {
     vec4 viewPosition = viewMatrix * vec4(currentPosition, 1.0);
     gl_Position = projectionMatrix * viewPosition;
 
-    // Need to recalculate normals for lighting because `normal` variable is still relating to world space
+    /**
+     * Need to recalculate normals for lighting because `normal` variable is still relating to world space
+     */
+
     // https://discourse.threejs.org/t/calculating-vertex-normals-after-displacement-in-the-vertex-shader/16989/7
     // https://observablehq.com/@k9/calculating-normals-for-distorted-vertices
 
@@ -168,9 +173,16 @@ void main() {
 
     vec3 computedNormal = normalize(cross(displacedTangent, displacedBitangent));
 
+    /**
+     * Fresnel
+     * https://www.youtube.com/watch?v=mL8U8tIiRRg&t=357s
+     */
+    vec3 viewDirection = normalize(currentPosition - cameraPosition); // again direction should (must?) be normalized
+    float fresnel = (1.0 - dot(-viewDirection, computedNormal)) * u_fresnelScale + u_fresnelOffset;
+
     // Varyings
     // vColor = normal;
     // vColor = tangent.xyz;
-    vColor = computedNormal;
+    vColor = computedNormal + fresnel; // You dont multiply but add fresnel
 
 }

@@ -99,6 +99,9 @@ const sphere = new THREE.Mesh(
       u_displacementScale: { value: 0.152 },
 
       u_segmentCount: { value: null },
+
+      u_fresnelScale: { value: 1 },
+      u_fresnelOffset: { value: 0 },
     },
     defines: {
       USE_TANGENT: "",
@@ -139,6 +142,18 @@ sphereGui
   .max(2)
   .step(0.01)
   .name("u_displacementScale");
+sphereGui
+  .add(sphere.material.uniforms.u_fresnelScale, "value")
+  .min(0)
+  .max(3)
+  .step(0.01)
+  .name("u_fresnelScale");
+sphereGui
+  .add(sphere.material.uniforms.u_fresnelOffset, "value")
+  .min(-2)
+  .max(2)
+  .step(0.01)
+  .name("u_fresnelOffset");
 
 /**
  * Animate
