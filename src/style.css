@@ -18,11 +18,27 @@ body {
 }
 
 #file-input {
+  display: none;
+}
+
+.btn-file-upload {
   position: fixed;
-  top: 10px;
-  left: 10px;
-  z-index: 2;
-  color: white;
+  top: 2%;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 3;
+
+  color: #ffffffdd;
+  cursor: pointer;
+  padding: 8px 10px;
+  border: #ffffff99 solid 2px;
+  border-radius: 5px;
+  transition: all 0.2s;
+}
+
+.btn-file-upload:hover {
+  color: #ffffff;
+  border: #ffffff solid 2px;
 }
 
 #sound-canvas {
@@ -38,7 +54,7 @@ body {
 #audio {
   position: fixed;
   left: 20%;
-  top: 5%;
+  top: 7%;
   width: 60%;
   z-index: 2;
 }
