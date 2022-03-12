@@ -60,7 +60,7 @@ const camera = new THREE.PerspectiveCamera(
   100
 );
 camera.position.z = 3.5;
-scene.add(camera, new THREE.AxesHelper(5));
+scene.add(camera);
 
 // Controls
 const controls = new OrbitControls(camera, canvas);
@@ -71,12 +71,13 @@ controls.enableDamping = true;
  */
 const renderer = new THREE.WebGLRenderer({
   canvas: canvas,
+  alpha: true,
   antialias: true,
 });
 renderer.setSize(sizes.width, sizes.height);
 renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
 
-renderer.setClearColor(new THREE.Color("#21130d"));
+// renderer.setClearColor(new THREE.Color("#21130d"));
 //////////////////////////////////////////////////////////////////////////////////////////////
 
 /**
