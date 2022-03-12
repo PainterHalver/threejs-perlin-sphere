@@ -127,12 +127,10 @@ const file = document.getElementById("file-input");
 const audio = document.getElementById("audio");
 const soundCanvas = document.getElementById("sound-canvas");
 
-file.onchange = function () {
-  const files = this.files;
-  audio.src = URL.createObjectURL(files[0]);
-  audio.load();
-  audio.play();
-  const context = new AudioContext();
+let context;
+
+const initSpectrum = () => {
+  context = new AudioContext();
   const src = context.createMediaElementSource(audio);
   const analyser = context.createAnalyser();
 
@@ -206,6 +204,21 @@ file.onchange = function () {
   }
   audio.play();
   renderFrame();
+};
+
+audio.addEventListener("play", (e) => {
+  if (!context) {
+    initSpectrum();
+  }
+});
+
+file.onchange = function (event) {
+  const files = this.files;
+  audio.src = URL.createObjectURL(files[0]);
+  audio.load();
+  audio.play();
+
+  initSpectrum();
 };
 
 /**
