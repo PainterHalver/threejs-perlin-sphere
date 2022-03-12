@@ -4,6 +4,7 @@ import { OrbitControls } from "three/examples/jsm/controls/OrbitControls.js";
 import { VertexNormalsHelper } from "three/examples/jsm/helpers/VertexNormalsHelper";
 import { ShaderPass } from "three/examples/jsm/postprocessing/ShaderPass";
 import { RenderPass } from "three/examples/jsm/postprocessing/RenderPass";
+import { UnrealBloomPass } from "three/examples/jsm/postprocessing/UnrealBloomPass";
 import { EffectComposer } from "three/examples/jsm/postprocessing/EffectComposer";
 
 import GUI from "lil-gui";
@@ -46,6 +47,9 @@ window.addEventListener("resize", () => {
   // Update renderer
   renderer.setSize(sizes.width, sizes.height);
   renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+
+  effectComposer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+  effectComposer.setSize(sizes.width, sizes.height);
 });
 
 /**
@@ -58,7 +62,7 @@ const camera = new THREE.PerspectiveCamera(
   0.1,
   100
 );
-camera.position.z = 3;
+camera.position.z = 2.5;
 scene.add(camera, new THREE.AxesHelper(5));
 
 // Controls
@@ -75,7 +79,7 @@ const renderer = new THREE.WebGLRenderer({
 renderer.setSize(sizes.width, sizes.height);
 renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
 
-// renderer.setClearColor(new THREE.Color("#21130d"));
+renderer.setClearColor(new THREE.Color("#21130d"));
 //////////////////////////////////////////////////////////////////////////////////////////////
 
 /**
@@ -114,8 +118,69 @@ sphere.material.uniforms.u_time.value = 0;
 scene.add(sphere);
 
 /**
- * Post-processing
+ * Sound
  */
+
+var file = document.getElementById("file-input");
+var audio = document.getElementById("audio");
+var soundCanvas = document.getElementById("sound-canvas");
+
+file.onchange = function () {
+  var files = this.files;
+  audio.src = URL.createObjectURL(files[0]);
+  audio.load();
+  audio.play();
+  var context = new AudioContext();
+  var src = context.createMediaElementSource(audio);
+  var analyser = context.createAnalyser();
+
+  soundCanvas.width = window.innerWidth;
+  // canvas.height = window.innerHeight;
+  soundCanvas.height = window.innerHeight * 0.3;
+  var ctx = soundCanvas.getContext("2d");
+
+  src.connect(analyser);
+  analyser.connect(context.destination);
+
+  analyser.fftSize = 256;
+
+  var bufferLength = analyser.frequencyBinCount;
+  console.log(bufferLength);
+
+  var dataArray = new Uint8Array(bufferLength);
+
+  var WIDTH = soundCanvas.width;
+  var HEIGHT = soundCanvas.height;
+
+  var barWidth = (WIDTH / bufferLength) * 2.5;
+  var barHeight;
+  var x = 0;
+
+  function renderFrame() {
+    requestAnimationFrame(renderFrame);
+
+    x = 0;
+
+    analyser.getByteFrequencyData(dataArray);
+
+    ctx.clearRect(0, 0, WIDTH, HEIGHT);
+
+    for (var i = 0; i < bufferLength; i++) {
+      barHeight = dataArray[i];
+
+      var r = barHeight + 25 * (i / bufferLength);
+      var g = 250 * (i / bufferLength);
+      var b = 50;
+
+      ctx.fillStyle = "rgb(" + r + "," + g + "," + b + ")";
+      ctx.fillRect(x, HEIGHT - barHeight, barWidth, barHeight);
+
+      x += barWidth + 1;
+    }
+  }
+  audio.play();
+  renderFrame();
+};
 
 /**
  * Debug
@@ -178,6 +243,7 @@ const tick = () => {
 
   // Render
   renderer.render(scene, camera);
+  // effectComposer.render();
 
   // Call tick again on the next frame
   window.requestAnimationFrame(tick);

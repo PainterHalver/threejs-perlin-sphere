@@ -1,19 +1,40 @@
-*
-{
-    margin: 0;
-    padding: 0;
+* {
+  margin: 0;
+  padding: 0;
 }
 
 html,
-body
-{
-    overflow: hidden;
+body {
+  overflow: hidden;
 }
 
-.webgl
-{
-    position: fixed;
-    top: 0;
-    left: 0;
-    outline: none;
+.webgl {
+  position: fixed;
+  top: 0;
+  left: 0;
+  outline: none;
+}
+
+#file-input {
+  position: fixed;
+  top: 10px;
+  left: 10px;
+  z-index: 100;
+  color: white;
+}
+
+#sound-canvas {
+  position: fixed;
+  left: 0;
+  bottom: 0;
+  width: 100%;
+  height: 30%;
+  background-color: transparent;
+}
+
+#audio {
+  position: fixed;
+  left: 10px;
+  top: 10%;
+  width: 30%;
 }
