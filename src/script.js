@@ -156,6 +156,10 @@ file.onchange = function () {
   let barHeight;
   let x = 0;
 
+  // Idea from moving average XDDDDD
+  const MOVING_AVERAGE = 5;
+  let lastSpectrums = [];
+
   function renderFrame() {
     requestAnimationFrame(renderFrame);
 
@@ -165,11 +169,24 @@ file.onchange = function () {
 
     ctx.clearRect(0, 0, WIDTH, HEIGHT);
 
+    ////////////////////////////////////////////////////////////////////////////////////////////////
+    //// CALCULATIONS
+
     const average =
       dataArray.reduce((prev, now) => prev + now, 0) / dataArray.length;
 
-    sphere.material.uniforms.u_scale.value = 1 + average * 0.005; // WE HAVE A MAGIC NUMBER HERE
-    sphere.material.uniforms.u_distortionFrequency.value = 1.5 + average * 0.01; // WE HAVE A MAGIC NUMBER HERE
+    if (lastSpectrums.length > MOVING_AVERAGE) {
+      lastSpectrums.shift();
+    }
+    lastSpectrums.push(average);
+    const averageLastSpectrum =
+      lastSpectrums.reduce((prev, now) => prev + now, 0) / lastSpectrums.length;
+
+    sphere.material.uniforms.u_scale.value = 1 + averageLastSpectrum * 0.005; // WE HAVE A MAGIC NUMBER HERE
+    sphere.material.uniforms.u_distortionFrequency.value =
+      1.5 + averageLastSpectrum * 0.01; // WE HAVE A MAGIC NUMBER HERE
+
+    ////////////////////////////////////////////////////////////////////////////////////////////////
 
     for (let i = 0; i < bufferLength; i++) {
       barHeight = dataArray[i];
