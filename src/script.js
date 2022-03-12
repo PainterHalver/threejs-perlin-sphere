@@ -75,7 +75,7 @@ const renderer = new THREE.WebGLRenderer({
 renderer.setSize(sizes.width, sizes.height);
 renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
 
-renderer.setClearColor(new THREE.Color("#21130d"));
+// renderer.setClearColor(new THREE.Color("#21130d"));
 //////////////////////////////////////////////////////////////////////////////////////////////
 
 /**
@@ -100,8 +100,8 @@ const sphere = new THREE.Mesh(
 
       u_segmentCount: { value: null },
 
-      u_fresnelScale: { value: 1 },
-      u_fresnelOffset: { value: 0 },
+      u_fresnelScale: { value: 2.85 },
+      u_fresnelOffset: { value: -1.67 },
     },
     defines: {
       USE_TANGENT: "",
@@ -112,6 +112,10 @@ sphere.material.uniforms.u_segmentCount.value =
   sphere.geometry.parameters.widthSegments;
 sphere.material.uniforms.u_time.value = 0;
 scene.add(sphere);
+
+/**
+ * Post-processing
+ */
 
 /**
  * Debug
@@ -139,7 +143,7 @@ sphereGui
 sphereGui
   .add(sphere.material.uniforms.u_displacementScale, "value")
   .min(0)
-  .max(2)
+  .max(1.5)
   .step(0.01)
   .name("u_displacementScale");
 sphereGui
