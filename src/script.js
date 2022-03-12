@@ -47,9 +47,6 @@ window.addEventListener("resize", () => {
   // Update renderer
   renderer.setSize(sizes.width, sizes.height);
   renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
-
-  effectComposer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
-  effectComposer.setSize(sizes.width, sizes.height);
 });
 
 /**
@@ -62,7 +59,7 @@ const camera = new THREE.PerspectiveCamera(
   0.1,
   100
 );
-camera.position.z = 2.5;
+camera.position.z = 3.5;
 scene.add(camera, new THREE.AxesHelper(5));
 
 // Controls
@@ -95,6 +92,7 @@ const sphere = new THREE.Mesh(
     fragmentShader: sphereFragmentShader,
     // wireframe: true,
     uniforms: {
+      u_scale: { value: 1.0 },
       u_time: { value: null },
 
       u_distortionFrequency: { value: 1.5 },
@@ -119,42 +117,44 @@ scene.add(sphere);
 
 /**
  * Sound
+ * https://codepen.io/nfj525/pen/rVBaab
  */
 
-var file = document.getElementById("file-input");
-var audio = document.getElementById("audio");
-var soundCanvas = document.getElementById("sound-canvas");
+const file = document.getElementById("file-input");
+const audio = document.getElementById("audio");
+const soundCanvas = document.getElementById("sound-canvas");
 
 file.onchange = function () {
-  var files = this.files;
+  const files = this.files;
   audio.src = URL.createObjectURL(files[0]);
   audio.load();
   audio.play();
-  var context = new AudioContext();
-  var src = context.createMediaElementSource(audio);
-  var analyser = context.createAnalyser();
+  const context = new AudioContext();
+  const src = context.createMediaElementSource(audio);
+  const analyser = context.createAnalyser();
 
   soundCanvas.width = window.innerWidth;
   // canvas.height = window.innerHeight;
   soundCanvas.height = window.innerHeight * 0.3;
-  var ctx = soundCanvas.getContext("2d");
+  const ctx = soundCanvas.getContext("2d");
 
   src.connect(analyser);
   analyser.connect(context.destination);
 
   analyser.fftSize = 256;
 
-  var bufferLength = analyser.frequencyBinCount;
+  const bufferLength = analyser.frequencyBinCount;
   console.log(bufferLength);
 
-  var dataArray = new Uint8Array(bufferLength);
+  const dataArray = new Uint8Array(bufferLength);
 
-  var WIDTH = soundCanvas.width;
-  var HEIGHT = soundCanvas.height;
+  const WIDTH = soundCanvas.width;
+  const HEIGHT = soundCanvas.height;
 
-  var barWidth = (WIDTH / bufferLength) * 2.5;
-  var barHeight;
-  var x = 0;
+  // let barWidth = (WIDTH / bufferLength) * 2.5;
+  let barWidth = WIDTH / bufferLength;
+  let barHeight;
+  let x = 0;
 
   function renderFrame() {
     requestAnimationFrame(renderFrame);
@@ -165,12 +165,18 @@ file.onchange = function () {
 
     ctx.clearRect(0, 0, WIDTH, HEIGHT);
 
-    for (var i = 0; i < bufferLength; i++) {
+    const average =
+      dataArray.reduce((prev, now) => prev + now, 0) / dataArray.length;
+
+    sphere.material.uniforms.u_scale.value = 1 + average * 0.005; // WE HAVE A MAGIC NUMBER HERE
+    sphere.material.uniforms.u_distortionFrequency.value = 1.5 + average * 0.01; // WE HAVE A MAGIC NUMBER HERE
+
+    for (let i = 0; i < bufferLength; i++) {
       barHeight = dataArray[i];
 
-      var r = barHeight + 25 * (i / bufferLength);
-      var g = 250 * (i / bufferLength);
-      var b = 50;
+      const r = barHeight + 25 * (i / bufferLength);
+      const g = 250 * (i / bufferLength);
+      const b = 50;
 
       ctx.fillStyle = "rgb(" + r + "," + g + "," + b + ")";
       ctx.fillRect(x, HEIGHT - barHeight, barWidth, barHeight);
@@ -187,6 +193,12 @@ file.onchange = function () {
  */
 const sphereGui = gui.addFolder("Sphere");
 sphereGui.open();
+sphereGui
+  .add(sphere.material.uniforms.u_scale, "value")
+  .min(0.5)
+  .max(2)
+  .step(0.001)
+  .name("u_scale");
 sphereGui
   .add(sphere.material.uniforms.u_distortionFrequency, "value")
   .min(0)

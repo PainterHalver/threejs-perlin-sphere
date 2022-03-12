@@ -1,3 +1,4 @@
+uniform float u_scale;
 uniform float u_time;
 uniform float u_distortionFrequency;
 uniform float u_distortionScale;
@@ -142,7 +143,8 @@ void main() {
     ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
     // Perlin last try :)
-    vec3 currentPosition = doPerlin(position);
+    vec3 newPosition = position * u_scale;
+    vec3 currentPosition = doPerlin(newPosition);
     
     vec4 viewPosition = viewMatrix * vec4(currentPosition, 1.0);
     gl_Position = projectionMatrix * viewPosition;
@@ -162,8 +164,8 @@ void main() {
     // Formula: length / num_of_segments
     float texelSize = (PI * 2.0) / u_segmentCount; 
 
-    vec3 neighbour1 = position + tangent.xyz * texelSize; 
-    vec3 neighbour2 = position + biTangent.xyz * texelSize;
+    vec3 neighbour1 = newPosition + tangent.xyz * texelSize; 
+    vec3 neighbour2 = newPosition + biTangent.xyz * texelSize;
     vec3 displacedNeighbour1 = doPerlin(neighbour1);
     vec3 displacedNeighbour2 = doPerlin(neighbour2);
 
