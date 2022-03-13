@@ -9,6 +9,9 @@ import { EffectComposer } from "three/examples/jsm/postprocessing/EffectComposer
 
 import GUI from "lil-gui";
 
+// import { initSpectrum, audioContext } from "./utils/spectrum.js";
+import Spectrum from "./utils/spectrum.js";
+
 import sphereVertexShader from "./shaders/sphereVertex.glsl";
 import sphereFragmentShader from "./shaders/sphereFragment.glsl";
 
@@ -123,102 +126,48 @@ scene.add(sphere);
  * https://codepen.io/nfj525/pen/rVBaab
  */
 
-const file = document.getElementById("file-input");
+const fileInput = document.getElementById("file-input");
 const audio = document.getElementById("audio");
 const soundCanvas = document.getElementById("sound-canvas");
-
-let context;
-
-const initSpectrum = () => {
-  context = new AudioContext();
-  const src = context.createMediaElementSource(audio);
-  const analyser = context.createAnalyser();
-
-  soundCanvas.width = window.innerWidth;
-  // canvas.height = window.innerHeight;
-  soundCanvas.height = window.innerHeight * 0.3;
-  const ctx = soundCanvas.getContext("2d");
-
-  src.connect(analyser);
-  analyser.connect(context.destination);
-
-  analyser.fftSize = 256;
-
-  const bufferLength = analyser.frequencyBinCount;
-  console.log(bufferLength);
-
-  const dataArray = new Uint8Array(bufferLength);
-
-  const WIDTH = soundCanvas.width;
-  const HEIGHT = soundCanvas.height;
-
-  // let barWidth = (WIDTH / bufferLength) * 2.5;
-  let barWidth = WIDTH / (bufferLength - 30); // omit last 30 spectrums
-  let barHeight;
-  let x = 0;
-
-  // Idea from moving average XDDDDD
-  const MOVING_AVERAGE = 5;
-  let lastSpectrums = [];
-
-  function renderFrame() {
-    requestAnimationFrame(renderFrame);
-
-    x = 0;
-
-    analyser.getByteFrequencyData(dataArray);
-
-    ctx.clearRect(0, 0, WIDTH, HEIGHT);
-
-    ////////////////////////////////////////////////////////////////////////////////////////////////
-    //// CALCULATIONS
-
-    const average =
-      dataArray.reduce((prev, now) => prev + now, 0) / dataArray.length;
-
-    if (lastSpectrums.length > MOVING_AVERAGE) {
-      lastSpectrums.shift();
-    }
-    lastSpectrums.push(average);
-    const averageLastSpectrum =
-      lastSpectrums.reduce((prev, now) => prev + now, 0) / lastSpectrums.length;
-
-    sphere.material.uniforms.u_scale.value = 1 + averageLastSpectrum * 0.005; // WE HAVE A MAGIC NUMBER HERE
-    sphere.material.uniforms.u_distortionFrequency.value =
-      1.5 + averageLastSpectrum * 0.01; // WE HAVE A MAGIC NUMBER HERE
-
-    ////////////////////////////////////////////////////////////////////////////////////////////////
-
-    for (let i = 0; i < bufferLength; i++) {
-      barHeight = dataArray[i];
-
-      const r = barHeight + 25 * (i / bufferLength);
-      const g = 250 * (i / bufferLength);
-      const b = 50;
-
-      ctx.fillStyle = "rgb(" + r + "," + g + "," + b + ")";
-      ctx.fillRect(x, HEIGHT - barHeight, barWidth, barHeight);
-
-      x += barWidth + 1;
-    }
-  }
-  // audio.play();
-  renderFrame();
-};
+let spectrum = null;
 
 audio.addEventListener("play", (e) => {
-  if (!context) {
+  if (!spectrum) {
     initSpectrum();
   }
 });
 
-file.onchange = function (event) {
+fileInput.onchange = function (event) {
   const files = this.files;
   audio.src = URL.createObjectURL(files[0]);
   audio.load();
   audio.play();
-
   initSpectrum();
+};
+
+const initSpectrum = () => {
+  spectrum = new Spectrum(audio, soundCanvas);
+  updateSphereWithSpectrum();
+};
+
+const updateSphereWithSpectrum = () => {
+  spectrum.setSphereUpdate(() => {
+    const average =
+      spectrum.dataArray.reduce((prev, now) => prev + now, 0) /
+      spectrum.dataArray.length;
+
+    if (spectrum.lastSpectrums.length > spectrum.MOVING_AVERAGE) {
+      spectrum.lastSpectrums.shift();
+    }
+    spectrum.lastSpectrums.push(average);
+    const averageLastSpectrum =
+      spectrum.lastSpectrums.reduce((prev, now) => prev + now, 0) /
+      spectrum.lastSpectrums.length;
+
+    sphere.material.uniforms.u_scale.value = 1 + averageLastSpectrum * 0.005; // WE HAVE A MAGIC NUMBER HERE
+    sphere.material.uniforms.u_distortionFrequency.value =
+      1.5 + averageLastSpectrum * 0.01; // WE HAVE A MAGIC NUMBER HERE
+  });
 };
 
 /**
@@ -289,6 +238,11 @@ const tick = () => {
   // Render
   renderer.render(scene, camera);
   // effectComposer.render();
+
+  // update Spectrum
+  if (spectrum) {
+    spectrum.renderSpectrum();
+  }
 
   // Call tick again on the next frame
   window.requestAnimationFrame(tick);
