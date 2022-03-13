@@ -153,7 +153,7 @@ const initSpectrum = () => {
   const HEIGHT = soundCanvas.height;
 
   // let barWidth = (WIDTH / bufferLength) * 2.5;
-  let barWidth = WIDTH / bufferLength;
+  let barWidth = WIDTH / (bufferLength - 30); // omit last 30 spectrums
   let barHeight;
   let x = 0;
 
@@ -202,7 +202,7 @@ const initSpectrum = () => {
       x += barWidth + 1;
     }
   }
-  audio.play();
+  // audio.play();
   renderFrame();
 };
 
