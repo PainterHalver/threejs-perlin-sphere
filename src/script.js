@@ -5,6 +5,7 @@ import { VertexNormalsHelper } from "three/examples/jsm/helpers/VertexNormalsHel
 import { ShaderPass } from "three/examples/jsm/postprocessing/ShaderPass";
 import { RenderPass } from "three/examples/jsm/postprocessing/RenderPass";
 import { UnrealBloomPass } from "three/examples/jsm/postprocessing/UnrealBloomPass";
+import { RGBShiftShader } from "three/examples/jsm/shaders/RGBShiftShader.js";
 import { EffectComposer } from "three/examples/jsm/postprocessing/EffectComposer";
 
 import GUI from "lil-gui";
@@ -167,8 +168,72 @@ const updateSphereWithSpectrum = () => {
     sphere.material.uniforms.u_scale.value = 1 + averageLastSpectrum * 0.005; // WE HAVE A MAGIC NUMBER HERE
     sphere.material.uniforms.u_distortionFrequency.value =
       1.5 + averageLastSpectrum * 0.01; // WE HAVE A MAGIC NUMBER HERE
+    tintPass.material.uniforms.uTint.value = new THREE.Color(0, 0, 0).addScalar(
+      averageLastSpectrum / 255
+    );
   });
 };
+
+/**
+ * Post-Processing
+ */
+const renderTarget = new THREE.WebGLRenderTarget(800, 600, {
+  minFilter: THREE.LinearFilter,
+  magFilter: THREE.LinearFilter,
+  format: THREE.RGBAFormat,
+  encoding: THREE.sRGBEncoding, // Here
+});
+const effectComposer = new EffectComposer(renderer, renderTarget); // Import not from THREE
+// Also add this to the resize callback
+effectComposer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+effectComposer.setSize(sizes.width, sizes.height);
+
+// Import not from THREE
+const renderPass = new RenderPass(scene, camera); // Just like a renderer
+// Add pass to composer
+effectComposer.addPass(renderPass);
+const TintShader = {
+  uniforms: {
+    // Set it to null and effectComposer will add value to it
+    // So we can use it below
+    tDiffuse: { value: null },
+    uTint: { value: null },
+  },
+  vertexShader: `
+  varying vec2 vUv;
+    
+    void main() {
+      gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+      vUv = uv;
+    }
+  `,
+  fragmentShader: `
+    varying vec2 vUv;
+    uniform sampler2D tDiffuse;
+    uniform vec3 uTint;
+
+    void main()
+    {
+      vec4 color = texture2D(tDiffuse, vUv);
+
+      // https://thebookofshaders.com/07/
+      // bottom-left
+      vec2 bl = smoothstep(vec2(-0.2), vec2(0.2), vUv);
+      float pct = bl.x * bl.y;
+  
+      // top-right
+      vec2 tr = smoothstep(vec2(-0.2), vec2(0.2), 1.0 - vUv);
+      pct *= tr.x * tr.y;
+
+      color.rgb += uTint * (1.0 - pct);
+      // color.rgb *= pct;
+      gl_FragColor = color;
+    }
+  `,
+};
+const tintPass = new ShaderPass(TintShader);
+tintPass.material.uniforms.uTint.value = new THREE.Vector3(0, 0, 0);
+effectComposer.addPass(tintPass);
 
 /**
  * Debug
@@ -217,6 +282,12 @@ sphereGui
   .max(2)
   .step(0.01)
   .name("u_fresnelOffset");
+// const tintPassGui = gui.addFolder("Border Tint Pass");
+// tintPassGui
+//   .addColor(tintPass.material.uniforms.uTint, "value")
+//   .onChange((value) => {
+//     tintPass.material.uniforms.uTint.value = new THREE.Color(value);
+//   });
 
 /**
  * Animate
@@ -236,8 +307,8 @@ const tick = () => {
   controls.update();
 
   // Render
-  renderer.render(scene, camera);
-  // effectComposer.render();
+  // renderer.render(scene, camera);
+  effectComposer.render();
 
   // update Spectrum
   if (spectrum) {
