@@ -110,7 +110,7 @@ const sphere = new THREE.Mesh(
       u_segmentCount: { value: null },
 
       u_fresnelScale: { value: 2.85 },
-      u_fresnelOffset: { value: -1.67 },
+      u_fresnelOffset: { value: -1.5 },
     },
     defines: {
       USE_TANGENT: "",
@@ -168,6 +168,7 @@ const updateSphereWithSpectrum = () => {
     sphere.material.uniforms.u_scale.value = 1 + averageLastSpectrum * 0.005; // WE HAVE A MAGIC NUMBER HERE
     sphere.material.uniforms.u_distortionFrequency.value =
       1.5 + averageLastSpectrum * 0.01; // WE HAVE A MAGIC NUMBER HERE
+
     tintPass.material.uniforms.uTint.value = new THREE.Color(0, 0, 0).addScalar(
       averageLastSpectrum / 255
     );
@@ -218,11 +219,11 @@ const TintShader = {
 
       // https://thebookofshaders.com/07/
       // bottom-left
-      vec2 bl = smoothstep(vec2(-0.2), vec2(0.2), vUv);
+      vec2 bl = smoothstep(vec2(-0.2), vec2(0.14), vUv);
       float pct = bl.x * bl.y;
   
       // top-right
-      vec2 tr = smoothstep(vec2(-0.2), vec2(0.2), 1.0 - vUv);
+      vec2 tr = smoothstep(vec2(-0.2), vec2(0.14), 1.0 - vUv);
       pct *= tr.x * tr.y;
 
       color.rgb += uTint * (1.0 - pct);

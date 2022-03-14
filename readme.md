@@ -4,8 +4,7 @@ A struggle to understand and replicate [this](https://organic-sphere.vercel.app/
 
 # TODOS
 
-- [ ] Other ways to add music, AudioContext also gets sound stream from mic
+- [x] ~~Other ways to add music, AudioContext also gets sound stream from mic~~ (Can but bad sound recognition quality)
 - [x] TintShaderPass or sth to light up the whole viewport
-- [ ] Crank up fresnelOffset with music
-- [ ] Maybe make the sphere a little transparent
+- [x] Maybe make the sphere a little transparent (change alpha of gl_FragColor < 1.0)
 - [x] Fix spectrum canvas resize issue

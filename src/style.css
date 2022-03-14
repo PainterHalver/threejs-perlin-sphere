@@ -6,7 +6,8 @@
 html,
 body {
   overflow: hidden;
-  background-color: #21130d;
+  /* background-color: #21130d; */
+  background-color: #140127;
 }
 
 .webgl {
