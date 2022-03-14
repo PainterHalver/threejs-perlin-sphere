@@ -169,9 +169,11 @@ const updateSphereWithSpectrum = () => {
     sphere.material.uniforms.u_distortionFrequency.value =
       1.5 + averageLastSpectrum * 0.01; // WE HAVE A MAGIC NUMBER HERE
 
-    tintPass.material.uniforms.uTint.value = new THREE.Color(0, 0, 0).addScalar(
-      averageLastSpectrum / 255
-    );
+    tintPass.material.uniforms.u_tint.value = new THREE.Color(
+      0,
+      0,
+      0
+    ).addScalar(averageLastSpectrum / 255);
   });
 };
 
@@ -198,7 +200,7 @@ const TintShader = {
     // Set it to null and effectComposer will add value to it
     // So we can use it below
     tDiffuse: { value: null },
-    uTint: { value: null },
+    u_tint: { value: null },
   },
   vertexShader: `
   varying vec2 vUv;
@@ -211,7 +213,7 @@ const TintShader = {
   fragmentShader: `
     varying vec2 vUv;
     uniform sampler2D tDiffuse;
-    uniform vec3 uTint;
+    uniform vec3 u_tint;
 
     void main()
     {
@@ -226,14 +228,14 @@ const TintShader = {
       vec2 tr = smoothstep(vec2(-0.2), vec2(0.14), 1.0 - vUv);
       pct *= tr.x * tr.y;
 
-      color.rgb += uTint * (1.0 - pct);
+      color.rgb += u_tint * (1.0 - pct);
       // color.rgb *= pct;
       gl_FragColor = color;
     }
   `,
 };
 const tintPass = new ShaderPass(TintShader);
-tintPass.material.uniforms.uTint.value = new THREE.Vector3(0, 0, 0);
+tintPass.material.uniforms.u_tint.value = new THREE.Vector3(0, 0, 0);
 effectComposer.addPass(tintPass);
 
 /**
@@ -285,9 +287,9 @@ sphereGui
   .name("u_fresnelOffset");
 // const tintPassGui = gui.addFolder("Border Tint Pass");
 // tintPassGui
-//   .addColor(tintPass.material.uniforms.uTint, "value")
+//   .addColor(tintPass.material.uniforms.u_tint, "value")
 //   .onChange((value) => {
-//     tintPass.material.uniforms.uTint.value = new THREE.Color(value);
+//     tintPass.material.uniforms.u_tint.value = new THREE.Color(value);
 //   });
 
 /**
