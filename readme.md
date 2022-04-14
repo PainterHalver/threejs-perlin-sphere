@@ -2,6 +2,8 @@ A struggle to understand and replicate [this](https://organic-sphere.vercel.app/
 
 <https://threejs-perlin-sphere-painterhalver.vercel.app/>
 
+![](static/preview.png)
+
 # TODOS
 
 - [x] ~~Other ways to add music, AudioContext also gets sound stream from mic~~ (Can but bad sound recognition quality)

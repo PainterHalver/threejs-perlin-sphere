@@ -186,5 +186,4 @@ void main() {
     // vColor = normal;
     // vColor = tangent.xyz;
     vColor = (computedNormal) + fresnel; // You dont multiply but add fresnel
-
 }
