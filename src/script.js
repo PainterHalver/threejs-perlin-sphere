@@ -285,12 +285,12 @@ sphereGui
   .max(2)
   .step(0.01)
   .name("u_fresnelOffset");
-// const tintPassGui = gui.addFolder("Border Tint Pass");
-// tintPassGui
-//   .addColor(tintPass.material.uniforms.u_tint, "value")
-//   .onChange((value) => {
-//     tintPass.material.uniforms.u_tint.value = new THREE.Color(value);
-//   });
+const tintPassGui = gui.addFolder("Border Tint Pass");
+tintPassGui
+  .addColor(tintPass.material.uniforms.u_tint, "value")
+  .onChange((value) => {
+    tintPass.material.uniforms.u_tint.value = new THREE.Color(value);
+  });
 
 /**
  * Animate
