@@ -229,6 +229,7 @@ const TintShader = {
       pct *= tr.x * tr.y;
 
       color.rgb += u_tint * (1.0 - pct);
+      color.a += u_tint.x * (1.0 - pct);
       // color.rgb *= pct;
       gl_FragColor = color;
     }
